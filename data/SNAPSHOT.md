@@ -1,90 +1,19 @@
-# Download snapshot
+# Current download snapshot
 
-Requested through **2026-11-12** (America/New_York).
-Downloaded at: 2026-11-12T03:35:57.890333-05:00.
+## Current data coverage and presentation note
 
-Option window: 2026-10-01 to 2026-11-10; 29 sessions / 290 rows.
+The requested option window is **2025-11-12 to 2026-11-12**. The current dataset contains **1,000 option quotes across 100 of 251 expected trading sessions** (39.8% coverage). **151 sessions are missing.**
 
-| Source / series | Latest actual observation |
-| --- | --- |
-| stocks | 2026-11-11 |
-| vix | 2026-11-10 |
-| treasury_3m | 2026-11-09 |
-| treasury_2y | 2026-11-09 |
-| treasury_5y | 2026-11-09 |
-| treasury_7y | 2026-11-09 |
-| treasury_10y | 2026-11-09 |
-| treasury_30y | 2026-11-09 |
-| options | 2026-11-10 |
-| last_paid_dividend | 2026-10-06 |
+MarketData returned HTTP 429 on **2026-02-26**. Previously downloaded later-date snapshots were recovered from the local cache, so the latest included option date is **2026-11-10** even though intervening dates remain missing. A recent final timestamp does not imply continuous coverage.
 
-## Coverage audit
+This is an **incomplete historical sample with substantial calendar gaps**, not a complete one-year backtest. Model evaluation uses chronological folds over the available observations; fold lengths represent observed sessions rather than equally long continuous calendar windows. Results should be presented as a demonstration of the pricing, IV inversion and machine-learning workflow. They do not establish year-round performance, next-day forecasting accuracy or trading profitability.
 
-date,vendor_rows,validated_rows,status
+To complete the window, check MarketData credits and rate-limit reset details, then rerun the original refresh command. Cached dates will be reused; no missing market observations are synthesized.
 
-2026-10-01,10,10,ok
+```powershell
+.\.venv\Scripts\python main.py refresh --start 2025-11-12 --end 2026-11-12
+```
 
-2026-10-02,10,10,ok
+### Suggested presentation wording
 
-2026-10-05,10,10,ok
-
-2026-10-06,10,10,ok
-
-2026-10-07,10,10,ok
-
-2026-10-08,10,10,ok
-
-2026-10-09,10,10,ok
-
-2026-10-12,10,10,ok
-
-2026-10-13,10,10,ok
-
-2026-10-14,10,10,ok
-
-2026-10-15,10,10,ok
-
-2026-10-16,10,10,ok
-
-2026-10-19,10,10,ok
-
-2026-10-20,10,10,ok
-
-2026-10-21,10,10,ok
-
-2026-10-22,10,10,ok
-
-2026-10-23,10,10,ok
-
-2026-10-26,10,10,ok
-
-2026-10-27,10,10,ok
-
-2026-10-28,10,10,ok
-
-2026-10-29,10,10,ok
-
-2026-10-30,10,10,ok
-
-2026-11-02,10,10,ok
-
-2026-11-03,10,10,ok
-
-2026-11-04,10,10,ok
-
-2026-11-05,10,10,ok
-
-2026-11-06,10,10,ok
-
-2026-11-09,10,10,ok
-
-2026-11-10,10,10,ok
-
-2026-11-11,0,0,MarketData HTTP 402: requested historical date unavailable for this account
-
-
-At download time it was early morning in New York. No completed November 12 daily stock session existed. The November 11 option request was rejected with HTTP 402 and was excluded; November 10 is the latest validated option day. Treasury and VIX dates are the latest nonmissing observations actually returned, not invented publication dates.
-
-Data is real API data under data/market and data/vendor, kept local. The separate data/sample fixture is synthetic and portable.
-
-All 290 market quotes produced IV labels. Three models completed all three chronological folds. Conservative macro availability assumptions and historical revision limitations still apply.
+> We requested one year of JPM option data. API access limits interrupted collection, leaving 100 of 251 expected trading sessions and 1,000 option quotes. The dataset combines an earlier historical segment with previously cached recent dates and has substantial gaps. The reported results evaluate our workflow on the available observations; they are not a complete one-year backtest.

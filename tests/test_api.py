@@ -129,3 +129,26 @@ class AdapterTests(unittest.TestCase):
             self.assertTrue((df.stock_available_at < df.quote_time).all())
             self.assertTrue((df.macro_available_at < df.quote_time).all())
             self.assertIn("ret_5d", df)
+
+            # After throttling, later cached dates must survive without more requests.
+            (Path(temp) / "cache" / "chain_2026-10-01.csv").unlink()
+            (Path(temp) / "cache" / "chain_2026-10-02.csv").unlink()
+            with patch.object(
+                api,
+                "fetch_jpm_option_chain",
+                side_effect=RuntimeError("Vendor HTTP 429"),
+            ) as request:
+                collect(
+                    "2026-10-01",
+                    "2026-10-30",
+                    Path(temp) / "raw",
+                    Path(temp) / "cache",
+                    pause=0,
+                )
+                self.assertEqual(request.call_count, 1)
+            import json
+
+            manifest = json.loads((Path(temp) / "raw" / "provenance.json").read_text())
+            self.assertEqual(manifest["download_status"], "incomplete_rate_limited")
+            self.assertEqual(manifest["option_sessions"], 20)
+            self.assertEqual(manifest["missing_sessions"], 2)

@@ -56,6 +56,11 @@ labels = read("labels_audit.csv")
 pred = read("out_of_time_predictions.csv")
 metrics = read("metrics.csv")
 provenance = run.get("data_provenance", {})
+if provenance.get("download_status", "").startswith("incomplete"):
+    st.warning(
+        f"INCOMPLETE HISTORICAL SAMPLE · {provenance.get('option_sessions', 'unknown')} of {provenance.get('expected_sessions', 'unknown')} expected trading sessions; {provenance.get('missing_sessions', 'unknown')} missing. Requested {provenance.get('start')} through {provenance.get('requested_through')}; latest included option {provenance.get('latest_observations', {}).get('options')}. Cached recent dates do not fill the intervening calendar gaps. These results are not a complete one-year backtest."
+    )
+
 st.markdown(
     '<div class="eyebrow">MARKET STRUCTURE · PRICING · MACHINE LEARNING</div>',
     unsafe_allow_html=True,

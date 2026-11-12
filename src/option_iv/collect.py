@@ -161,6 +161,7 @@ def collect(
     ).to_csv(out / "dividends.csv", index=False)
     chains = []
     audit = []
+    rate_limited_at = None
     # Actual stock sessions avoid weekend/holiday API calls.
     sessions = stock.loc[start:end].index
     for session in sessions:
@@ -169,6 +170,16 @@ def collect(
         if path.exists():
             chain = pd.read_csv(path)
         else:
+            if rate_limited_at is not None:
+                audit.append(
+                    {
+                        "date": date,
+                        "vendor_rows": 0,
+                        "validated_rows": 0,
+                        "status": "not_requested_after_http_429",
+                    }
+                )
+                continue
             print(f"Downloading JPM option chain {date}...", flush=True)
             try:
                 chain = api.fetch_jpm_option_chain(date)
@@ -185,7 +196,11 @@ def collect(
                 # Preserve completed dates, and surface unavailable/plan-limited dates.
                 time.sleep(pause)
                 if "429" in str(exc):
-                    break
+                    rate_limited_at = date
+                    print(
+                        f"WARNING: MarketData returned HTTP 429 on {date}. No further network requests will be made; existing later-date caches will still be included.",
+                        flush=True,
+                    )
                 continue
             if not chain.empty:
                 chain.to_csv(path, index=False)
@@ -202,6 +217,7 @@ def collect(
         pd.DataFrame(audit).to_csv(out / "collection_audit.csv", index=False)
         if not frame.empty:
             chains.append(frame)
+    pd.DataFrame(audit).to_csv(out / "collection_audit.csv", index=False)
     if not chains:
         raise ValueError(
             "No dated historical chains returned; inspect vendor access and date range"
@@ -227,6 +243,18 @@ def collect(
             ),
             "last_paid_dividend": str(ex.max().date()) if len(ex) else None,
         },
+        "download_status": (
+            "incomplete_rate_limited"
+            if rate_limited_at
+            else (
+                "complete"
+                if all(item["status"] == "ok" for item in audit)
+                else "incomplete_unavailable_dates"
+            )
+        ),
+        "rate_limited_at": rate_limited_at,
+        "expected_sessions": len(sessions),
+        "missing_sessions": sum(item["status"] != "ok" for item in audit),
         "option_rows": len(options),
         "option_sessions": int(options.quote_time.nunique()),
         "macro_timing": "assumed end of following day; not certified point-in-time vintages",
@@ -239,6 +267,11 @@ def collect(
     (out / "provenance.json").write_text(
         json.dumps(manifest, indent=2), encoding="utf-8"
     )
+    if manifest["download_status"] != "complete":
+        print(
+            f"WARNING: Download is incomplete: {manifest['option_sessions']}/{manifest['expected_sessions']} sessions, {manifest['missing_sessions']} missing. Requested through {end}; latest included quote {manifest['latest_observations']['options']}. Training will use only the available subset. See collection_audit.csv and provenance.json.",
+            flush=True,
+        )
     return out
 
 

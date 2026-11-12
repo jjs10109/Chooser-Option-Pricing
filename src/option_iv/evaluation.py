@@ -1,5 +1,7 @@
 """Date-grouped expanding splits and within-expiry surface evaluation."""
 
+from datetime import timedelta
+
 import numpy as np
 import pandas as pd
 
@@ -13,7 +15,8 @@ def date_splits(df, folds=3, gap_days=1):
         start = block[0]
         end = block[-1]
         train = np.flatnonzero(
-            df.quote_time.dt.floor("D") < start - pd.Timedelta(days=gap_days)
+            df.quote_time.dt.floor("D")
+            < pd.Timestamp(start).to_pydatetime() - timedelta(days=gap_days)
         )
         test = np.flatnonzero(df.quote_time.dt.floor("D").between(start, end))
         if len(train) and len(test):
