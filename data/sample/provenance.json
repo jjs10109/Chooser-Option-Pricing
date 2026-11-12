@@ -1,0 +1,7 @@
+{
+  "dataset_kind": "synthetic demonstration; not market observations",
+  "seed": 42,
+  "generator": "BSM European quotes with prescribed smile",
+  "sources": [],
+  "requested_through": null
+}

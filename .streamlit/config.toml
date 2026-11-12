@@ -1,0 +1,10 @@
+[theme]
+base="dark"
+primaryColor="#5ce1be"
+backgroundColor="#0c1220"
+secondaryBackgroundColor="#142139"
+textColor="#e7edf8"
+[server]
+address="127.0.0.1"
+[browser]
+gatherUsageStats=false

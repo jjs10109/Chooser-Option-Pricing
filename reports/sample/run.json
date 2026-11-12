@@ -1,0 +1,28 @@
+{
+  "features": [
+    "return_1d",
+    "rv_20d",
+    "r",
+    "q",
+    "vix",
+    "term_spread",
+    "log_moneyness",
+    "t",
+    "volume",
+    "open_interest",
+    "is_put",
+    "is_american"
+  ],
+  "rows": 375,
+  "accepted": 275,
+  "crr_steps": 200,
+  "dividend_mode": "trailing continuous yield",
+  "task": "contemporaneous IV estimation; not next-day forecasting",
+  "data_provenance": {
+    "dataset_kind": "synthetic demonstration; not market observations",
+    "seed": 42,
+    "generator": "BSM European quotes with prescribed smile",
+    "sources": [],
+    "requested_through": null
+  }
+}
